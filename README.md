@@ -9,4 +9,6 @@ refer back to.
 
 # Reverse Engineering
 
+* DEFCON Quals 2022 `hash-it`
+
 # Cryptography
