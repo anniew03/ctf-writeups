@@ -1,4 +1,4 @@
-# Smuggling mail write up
+# Smuggling mail(423 pts) write up
 
 # Recon
 ## Infomation Gathering
