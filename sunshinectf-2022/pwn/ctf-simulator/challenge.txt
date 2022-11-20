@@ -1,0 +1,8 @@
+Step right up and compete to improve your guessing CTF skills!
+
+nc sunshinectf.games 22000
+
+    ctf-simulator
+
+Author: kcolley
+
