@@ -6,9 +6,9 @@ This challenge provides a Linux CLI program with a stack buffer overflow
 vulnerability that is exploited by executing shellcode on the executable
 stack. The exploit uses a single ROP gadget to jump into the stack.
 
-Artifacts:
-* chall/vuln: vulnerable executable program
-* chall/vuln.c: vulnerable program source code
+**Artifacts:**
+* chall/vuln: vulnerable executable program provided by challenge authors
+* chall/vuln.c: vulnerable program source code provided by challenge authors
 * solve.py: exploit script that executes `/bin/sh` shellcode in the vulnerable
   process
 * gadgets.txt: ROP gadgets in `chall/vuln` found by the `ROPgadget` utility
@@ -17,8 +17,8 @@ Artifacts:
 
 ## Context
 
-The `ropfu` challenge prompt provides a domain URL and port to connect to the
-challenge. It also provides a copy of the compiled challenge binary
+The `ropfu` challenge authors provide a domain and port to connect to the
+challenge. They also provide a copy of the compiled challenge binary
 (`chall/vuln`) and the source code used to produce the binary (`chall/vuln.c`).
 
 `vuln` is a 32-bit x86 Linux userspace program. It runs as a CLI program and
@@ -110,11 +110,11 @@ Segmentation fault (core dumped)
 
 ## Exploitation
 
-*Exploit overview*: use a local stack buffer overflow to achieve arbitrary code
-execution by jumping to attacker-controlled data written to the executable
-stack.
+**Exploit overview**: the exploit uses a local stack buffer overflow to achieve
+arbitrary code execution by jumping to attacker-controlled data written to the
+executable stack.
 
-*Exploit mitigation context*:
+**Exploit mitigation considerations**:
 * the `vuln` function does not check for a correct stack canary; therefore,
   overwriting the saved return address on the stack is not protected.
 * the stack is executable; therefore, any data that the attacker writes to the
@@ -124,11 +124,11 @@ stack.
   execution. These instruction addresses can be used for gadgets without a
   memory leak.
 
-*Input constraints*: [`\n`]
+**Input constraints**: [`\n`]
 * The `gets` function reads until a newline character or EOF. Therefore, the
   exploit input cannot contain any newline characters.
 
-*Exploit description*: the `solve.py` exploit sends a single input that both 1)
+**Exploit description**: the `solve.py` exploit sends a single input that both 1)
 writes the shellcode into executable process memory and 2) gains control of the
 instruction pointer to execute the shellcode.
 
@@ -197,7 +197,7 @@ Executing the vulnerable program with this input results in the execution of
 a `/bin/sh` shell to read the flag. See the `solve.py` script for proof of
 concept.
 
-*Exploit primitives used*:
+**Exploit primitives used**:
 1. Local stack buffer overwrite to overwrite saved return address
 2. Overwrite saved return address to control instruction pointer
 3. Control instruction pointer to execute arbitrary code
