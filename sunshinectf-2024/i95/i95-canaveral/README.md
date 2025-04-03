@@ -1,4 +1,4 @@
-# ropfu
+# i95-canaveral
 
 ## Summary
 
@@ -96,7 +96,7 @@ This means that an attacker can write past the 100 bytes allocated on the stack 
 
 ## Exploitation
 
-**Exploit overview**: the exploit uses a local stack buffer overflow to change the original execution of the program by overwriting the return address in the function call stack
+**Exploit overview**: the exploit uses a local stack buffer overflow to change the original execution of the program by overwriting the return address in the function call stack to call `win` which is not originally called in `main`
 
 **Exploit mitigation considerations**:
 * Stack canary disabled: stack canaries being disabled means that we can overwrite the return addresses on the stack and manipulate program execution flow.
@@ -109,8 +109,8 @@ This means that an attacker can write past the 100 bytes allocated on the stack 
 vuln() stack layout:
 low address     +------------+  <--- ebp - 0x50       +------------+
                 |            |                        |            |
-                |  inp[100]  |                        |   all 1s   |
-                |            |                        |            |    
+                |  inp[100]  |                        |            |
+                |            |                        |   all 1s   |    
                 +------------+                        |            |
                 |   padding  |                        |            |         
                 +------------+  <--- current ebp      +------------+
@@ -125,59 +125,25 @@ high address    +------------+                        +------------+
                                                       +------------+
 ```
 
+The reason why we can't overwrite the return address to the `win` address directly is bceause `win` calls `system("/bin/sh")` is because `system()` requires `rsp` be aligned to a 16 byte boundary, so before the `win` address, we add a `ret` instruction before it to align `rsp`.
 
-However, 28 bytes is not a lot of space; the pwntools x86 Linux `/bin/sh`
-shellcode is 42 bytes long and will not fit in the padding space. Rather than
-trying to minimize the shellcode to squeeze it in, we instead place a single
-`jmp` instruction at the beginning of the input that jumps forward 32 bytes (a
-trampoline), and then place the full shellcode _after_ the gadget, where we
-have no limitation on the size of the shellcode. The only remaining constraint
-is that the input cannot contain any newline characters.
-
-```
-eax
- |
- V
- 0           2                    28        32
- [jmp $+0x20][---padding---------][@JMP-EAX][----shellcode----]
-  |                                          ^
-  |                                          |
-  --------------------------------------------
-```
-
-Executing the vulnerable program with this input results in the execution of
-a `/bin/sh` shell to read the flag. See the `solve.py` script for proof of
-concept.
 
 **Exploit primitives used**:
 1. Local stack buffer overwrite to overwrite saved return address
-2. Overwrite saved return address to control instruction pointer
-3. Control instruction pointer to execute arbitrary code
+2. Overwrite saved return address to control execution flow of program
+3. Control instruction pointer to `win` function
 
 ## Remediation
 
 To patch the vulnerability, the `gets` function call should be replaced with a
-size-sensitive function call like `fgets`, and restricted to only read as many
-bytes as are allocated:
+function call that checks the size to prevent arbitrary overwrites like `fgets`.
 
 ```
-void vuln() {
-  char buf[16];
-  printf("How strong is your ROP-fu? Snatch the shell from my hand, grasshopper!\n");
-  return fgets(buf, sizeof buf, stdin);
+void func0() {
+	char inp[100];
+	printf("Enter the launch command: ");
+	fgets(inp, sizeof inp, stdin);
 }
 ```
 
-Compiling the program with standard exploit mitigations would make the
-vulnerability more difficult to exploit:
-* a stack canary would prevent turning the local overwrite into instruction
-  pointer control.
-* PIE would prevent the use of program instructions as ROP gadgets.
-* a non-executable stack would prevent the execution of shellcode written to
-  the stack.
-
-None of the above mitigations would guarantee that the vulnerability is not
-exploitable, but they would have made exploitation more challenging.
-
-We could search programs for more vulnerabilities of this type by conducting a
-simple regex search for calls to the `gets` library function.
+Mitigations such as compiler generated stack canaries and PIE would make the exploit more challenging. A stack canary would have made the overwrite of return addresses and manipulating control flow harder with value that changes between each run, and PIE would have made it harder for an attacker to predict the addresses of critical functions.
