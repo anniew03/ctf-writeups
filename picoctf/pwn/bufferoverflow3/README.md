@@ -1,8 +1,8 @@
-# state-change
+# buffer overflow 3
 
 ## Summary
 
-This challenge provides a Linux CLI program with a stack buffer overflow vulnerability that allows the user to execute functions within the program.
+This challenge provides a Linux CLI program with a stack buffer overflow vulnerability that allows the user to execute functions within the program. The premise of this challenge is to brute force a manually placed stack canary placed before the return address in order to make the buffer overflow attack harder.
 
 **Artifacts:**
 * chall/vuln: vulnerable executable program provided by challenge authors
@@ -11,7 +11,7 @@ This challenge provides a Linux CLI program with a stack buffer overflow vulnera
 
 ## Context
 
-The challenge has a provided domain and port, but it can also run locally using the provided vuln executable. When running locally, a `canary.txt` file should be provided with your own canary value.
+The challenge has a provided domain and port, but it can also run locally using the provided vuln executable. When running locally, a `canary.txt` file should be provided with your own canary value. The program reads a "canary" value from a file named canary.txt; in order to execute the program, you must create a file named canary.txt that contains a 4 byte string, where the program will then place this value before the return address.
 
 When the program is run, it prints out a message and prompts the user to enter text then exits after receiving it.
 
@@ -102,7 +102,7 @@ int main(int argc, char **argv){
   return 0;
 }
 ```
-In order to get the flag, the `win` function which isn’t called in `main` needs to be called, and to do this, the canary value needs to be overwritten with the same value so that it doesn't detect the buffer overflow. For example, if 65 As are sent to the program it will detect an overflow and quit the program. However, if 64 As are sent the program detects no stack smashing since the cannary hasn't been overwritten with a different value. The 65th A is the first byte of the canary with the buffer size being 64 and the canary being right after it.
+In order to get the flag, the `win` function which isn’t called in `main` needs to be called, and the goal is to use the stack buffer overflow to overwrite the saved return address with the win function. However, in order to do that successfully without causing the program to crash, you also need to replace the canary value correctly. For example, if 65 As are sent to the program it will detect an overflow and quit the program. However, if 64 As are sent the program detects no stack smashing since the cannary hasn't been overwritten with a different value. The 65th A is the first byte of the canary with the buffer size being 64 and the canary being right after it.
 ```
 $ chall/vuln.c
 How Many Bytes will You Write Into the Buffer?
@@ -135,7 +135,7 @@ While `read()` allows the program to limit how much can be written to a buffer, 
 
 ## Exploitation
 
-**Exploit overview**: the exploit uses a local stack buffer to overwrite the return address on the stack to call a different function in the program.
+**Exploit overview**: The exploit uses a local stack buffer overflow to overwrite the saved return address on the stack to call a win function. The exploit overcomes a custom implementation of a stack canary check through leaking the canary by byte-by-byte brute force.
 
 **Exploit mitigation considerations:**
 
